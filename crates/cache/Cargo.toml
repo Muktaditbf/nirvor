@@ -1,0 +1,11 @@
+[package]
+name = "nirvor-cache"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+hickory-proto.workspace = true
+moka.workspace = true
+serde.workspace = true

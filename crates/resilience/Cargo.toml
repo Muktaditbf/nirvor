@@ -1,0 +1,20 @@
+[package]
+name = "nirvor-resilience"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+nirvor-cache = { path = "../cache" }
+nirvor-upstream = { path = "../upstream" }
+hickory-proto.workspace = true
+tokio.workspace = true
+serde.workspace = true
+tracing.workspace = true
+moka.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
+ring.workspace = true
+data-encoding.workspace = true
+rand.workspace = true

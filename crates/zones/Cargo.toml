@@ -1,0 +1,10 @@
+[package]
+name = "nirvor-zones"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+hickory-proto.workspace = true
+serde.workspace = true

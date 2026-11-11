@@ -1,0 +1,30 @@
+name: Bug report
+description: Something answers wrong, crashes or misbehaves
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: A `dig` command, config excerpt (remove addresses you don't want public) or steps in the dashboard.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `nirvor --version`
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant log lines (`RUST_LOG=info,nirvor_core=debug` gives more detail).
+      render: text

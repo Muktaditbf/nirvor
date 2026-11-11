@@ -1,0 +1,33 @@
+[package]
+name = "nirvor-api"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+nirvor-core = { path = "../core" }
+nirvor-upstream = { path = "../upstream" }
+axum.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+nirvor-storage = { path = "../storage" }
+nirvor-zones = { path = "../zones" }
+argon2.workspace = true
+rand.workspace = true
+moka.workspace = true
+hickory-proto.workspace = true
+toml.workspace = true
+axum-server.workspace = true
+tokio-stream.workspace = true
+futures-util.workspace = true
+rust-embed.workspace = true
+nirvor-policy = { path = "../policy" }
+nirvor-cache = { path = "../cache" }
+
+[dev-dependencies]
+reqwest = { workspace = true, features = ["json"] }
+nirvor-resilience = { path = "../resilience" }
+rustls.workspace = true

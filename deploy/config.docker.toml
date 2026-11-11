@@ -1,0 +1,25 @@
+# Container configuration. Mount your own over /etc/nirvor/config.toml (the directory must be
+# writable if you want dashboard edits to be saved).
+
+[server]
+listen = ["0.0.0.0:53"]
+
+[[upstream.servers]]
+name = "Cloudflare"
+addr = "1.1.1.1:53"
+
+[[upstream.servers]]
+name = "Google"
+addr = "8.8.8.8:53"
+
+[api]
+# Publish this port only on a management network.
+listen = "0.0.0.0:8053"
+
+[resilience]
+data_dir = "/var/lib/nirvor"
+
+[policy]
+# CHANGE THIS to your subscriber ranges. Docker's default bridge network is included so the
+# container answers port-forwarded queries; nothing else is allowed (never an open resolver).
+allow = ["127.0.0.0/8", "::1/128", "172.16.0.0/12"]

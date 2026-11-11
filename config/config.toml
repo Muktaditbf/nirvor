@@ -1,0 +1,140 @@
+# nirvor example configuration. Every section is optional except [server] and [upstream].
+# Check a file without starting:  nirvor --check-config -c config/config.toml
+# Note: saving from the dashboard rewrites this file without comments.
+
+[server]
+# UDP and TCP use the same addresses. Dev uses 5300 because 5353 is taken by mDNS on most Linux desktops.
+# Production: "0.0.0.0:53" and "[::]:53" (needs CAP_NET_BIND_SERVICE; the systemd unit grants it).
+listen = ["127.0.0.1:5300", "[::1]:5300"]
+max_udp_payload = 1232             # DNS Flag Day 2020; larger answers are truncated so clients use TCP
+# udp_sockets = 4                  # SO_REUSEPORT sockets per address; default is one per CPU
+
+[upstream]
+timeout_ms = 1500                  # longest wait per upstream; adapts down to measured latency (RFC 6298)
+min_timeout_ms = 150
+max_attempts = 3
+health_interval_secs = 5
+failure_threshold = 3              # failures in a row before an upstream is marked down
+probe_name = "."
+
+[[upstream.servers]]
+name = "Cloudflare"
+addr = "1.1.1.1:53"
+international = true               # international upstreams are watched to detect isolation
+
+[[upstream.servers]]
+name = "Google"
+addr = "8.8.8.8:53"
+international = true
+
+[[upstream.servers]]
+name = "Quad9"
+addr = "9.9.9.9:53"
+international = true
+
+# A resolver reachable over BDIX or your own network keeps working in isolation:
+# [[upstream.servers]]
+# name = "BDIX resolver"
+# addr = "203.0.113.53:53"
+# international = false
+
+[cache]
+max_entries = 200000
+min_ttl = 0
+max_ttl = 86400
+negative_max_ttl = 3600            # RFC 2308
+prefetch_percent = 10              # refresh popular answers in the last 10% of their TTL
+prefetch_min_hits = 3
+stale_window = 86400               # RFC 8767: serve expired answers up to 1 day when upstreams fail
+isolation_stale_window = 604800    # 7 days while isolated
+pinned_stale_window = 2592000      # 30 days for pinned domains
+stale_answer_ttl = 30
+client_response_timer_ms = 1800    # answer stale if a refresh takes longer than this
+failure_recheck_secs = 30
+servfail_cache_secs = 5
+
+[limits]
+max_inflight_udp = 4096
+max_tcp_connections = 512
+tcp_idle_timeout_ms = 10000
+max_query_size = 4096
+query_timeout_ms = 4000
+
+[api]
+listen = "127.0.0.1:8053"          # dashboard, API and /metrics: keep on a management network
+# tls_cert = "/etc/nirvor/tls/cert.pem"
+# tls_key = "/etc/nirvor/tls/key.pem"
+
+[policy]
+# Subscriber ranges allowed to query. Everything else is denied: nirvor is never an open resolver.
+allow = ["127.0.0.0/8", "::1/128"]
+# allow = ["127.0.0.0/8", "::1/128", "103.0.0.0/22", "2401:db00::/32"]
+deny_action = "drop"               # or "refuse"
+block_response = "nxdomain"        # "nxdomain" | "refused" | "null" | "redirect"
+# redirect_ipv4 = "10.0.0.80"      # block-notice page for "redirect"
+block_ttl = 60
+reload_check_secs = 30
+
+[policy.rate_limit]
+per_client_qps = 300
+burst = 600
+ipv6_prefix = 64
+
+[policy.rrl]
+responses_per_second = 50          # identical UDP answers per client network
+slip = 2                           # every 2nd limited answer is sent truncated
+ipv4_prefix = 24
+ipv6_prefix = 56
+
+# [[policy.blocklists]]
+# name = "Regulator list"
+# path = "/etc/nirvor/blocklist.txt"   # or url = "https://…"
+# refresh_secs = 21600
+
+[resilience]
+data_dir = "data"                  # root zone copy, cache snapshot, database; /var/lib/nirvor in production
+snapshot_interval_secs = 300
+pinned_refresh_secs = 60
+recursion_timeout_ms = 1500
+# Popular local sites kept warm, so they keep resolving during an international outage.
+pinned_domains = [
+  "prothomalo.com", "bdnews24.com", "thedailystar.net", "jugantor.com", "kalerkantho.com",
+  "daraz.com.bd", "bikroy.com", "chaldal.com", "bkash.com", "nagad.com.bd",
+  "bangladesh.gov.bd", "bb.org.bd", "nbr.gov.bd", "du.ac.bd", "buet.ac.bd",
+  "grameenphone.com", "robi.com.bd", "banglalink.net", "btcl.com.bd", "teletalk.com.bd",
+]
+
+[resilience.root_zone]
+enabled = true
+sources = ["https://www.internic.net/domain/root.zone"]
+refresh_secs = 3600
+
+[isolation]
+isolation_after_secs = 15          # every international upstream down this long → isolation
+recover_after_secs = 30            # an international upstream back this long → leave isolation
+check_interval_secs = 2
+# connectivity_responder = "10.0.0.53:80"   # built-in HTTP answers for OS connectivity checks
+
+# Answered only in isolation. Point OS connectivity checks at the responder above:
+# [[isolation.overrides]]
+# name = "connectivitycheck.gstatic.com"
+# records = ["@ A 10.0.0.53"]
+# [[isolation.overrides]]
+# name = "dns.msftncsi.com"
+# records = ["@ A 131.107.255.255"]       # Windows expects exactly this address
+
+[logging]
+query_log = "anonymized"           # "full" | "anonymized" (IPv4 /24, IPv6 /48) | "off"
+buffer = 2000
+history_days = 30
+audit_days = 365
+
+# ISP-internal names, answered authoritatively. Records: "<name relative to zone> <TYPE> <data>".
+[[zones]]
+name = "isp.example"
+ttl = 300
+records = [
+  "@ A 10.0.0.1",
+  "portal A 10.0.0.10",
+  "speedtest CNAME portal",
+]

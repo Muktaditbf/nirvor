@@ -1,0 +1,31 @@
+[package]
+name = "nirvor-core"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+tokio.workspace = true
+hickory-proto.workspace = true
+serde.workspace = true
+tracing.workspace = true
+nirvor-cache = { path = "../cache" }
+nirvor-upstream = { path = "../upstream" }
+nirvor-resilience = { path = "../resilience" }
+nirvor-zones = { path = "../zones" }
+nirvor-storage = { path = "../storage" }
+nirvor-policy = { path = "../policy" }
+moka.workspace = true
+thiserror.workspace = true
+rand.workspace = true
+socket2.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+nirvor-upstream = { path = "../upstream" }
+nirvor-resilience = { path = "../resilience" }
+nirvor-zones = { path = "../zones" }
+nirvor-policy = { path = "../policy" }
+proptest.workspace = true
+toml.workspace = true

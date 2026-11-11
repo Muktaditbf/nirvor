@@ -1,0 +1,27 @@
+# nirvor settings used by bench/run.sh (same upstreams as bench/unbound.conf).
+[server]
+listen = ["127.0.0.1:5300"]
+
+[[upstream.servers]]
+name = "Cloudflare"
+addr = "1.1.1.1:53"
+
+[[upstream.servers]]
+name = "Google"
+addr = "8.8.8.8:53"
+
+[api]
+listen = "127.0.0.1:8054"
+
+[resilience]
+data_dir = "bench/.data"
+
+[resilience.root_zone]
+enabled = false
+
+# The load generator is one client sending far above per-client limits; Unbound has none by default.
+[policy.rate_limit]
+per_client_qps = 0
+
+[policy.rrl]
+responses_per_second = 0
